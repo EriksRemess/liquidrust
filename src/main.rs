@@ -2,12 +2,12 @@ extern crate hidapi;
 use hidapi::HidApi;
 use rand::Rng;
 
-fn crc8(data: &[u8], polynomial: u8) -> u8 {
+fn crc8(data: &[u8]) -> u8 {
     data.iter().fold(0x00, |mut remainder, &byte| {
         remainder ^= byte;
         for _ in 0..8 {
             remainder = if remainder & 0x80 != 0 {
-                (remainder << 1) ^ polynomial
+                (remainder << 1) ^ 0x07
             } else {
                 remainder << 1
             };
@@ -28,7 +28,7 @@ fn main() {
             if let Ok(liquid) = device.open_device(&api) {
                 let mut request = [0u8; 64];
                 request[0..3].copy_from_slice(&[0x3f, random_byte(), 0xff]);
-                request[63] = crc8(&request[1..63], 0x07);
+                request[63] = crc8(&request[1..63]);
 
                 if liquid.write(&request).is_err() {
                     eprintln!("Failed to write to device");
@@ -37,7 +37,7 @@ fn main() {
 
                 let mut response = [0u8; 64];
                 if liquid.read(&mut response).is_ok() {
-                    if response[63] == crc8(&response[1..63], 0x07) {
+                    if response[63] == crc8(&response[1..63]) {
                         let temperature = response[8] as f32 + response[7] as f32 / 255.0;
                         println!("{:.2}°C", temperature);
                     } else {
