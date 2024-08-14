@@ -2,7 +2,10 @@
 name = "liquidrust"
 version = "0.0.1"
 edition = "2021"
+authors = ["EriksRemess"]
 description = "Liquid temperature checker for Corsair H115iRGBPROXT"
+license = "MIT"
+repository = "https://github.com/EriksRemess/liquidrust"
 
 [dependencies]
 hidapi = "2.6.3"
