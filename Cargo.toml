@@ -1,0 +1,12 @@
+[package]
+name = "liquidrust"
+version = "0.0.1"
+edition = "2021"
+description = "Liquid temperature checker for Corsair H115iRGBPROXT"
+
+[dependencies]
+hidapi = "2.6.3"
+rand = "0.8.5"
+
+[profile.release]
+strip = true
