@@ -10,6 +10,11 @@ repository = "https://github.com/EriksRemess/liquidrust"
 homepage = "https://github.com/EriksRemess/liquidrust"
 keywords = ["corsair", "rgb", "liquid", "cooling", "fan", "control", "monitoring", "hardware", "iCUE", "AIO"]
 categories = ["hardware-interfaces", "system", "monitoring", "hardware"]
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "Readme.md",
+]
 
 [dependencies]
 clap = { version = "4.5.15", features = ["derive"] }
