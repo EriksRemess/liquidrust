@@ -101,7 +101,7 @@ fn read_from_device(device: &HidDevice) -> [u8; 64] {
 fn set_colors(device: &HidDevice, color: u32) {
     let mut req = [0u8; 64];
     req[0..2].copy_from_slice(&[0x3f, random_byte() | 0b100]);
-    let mut color = color;
+    // let mut color = color;
     for i in 0..16 {
         // color = color.rotate_left(1);
         // color = random_rgb();
@@ -118,9 +118,9 @@ fn set_colors(device: &HidDevice, color: u32) {
     thread::sleep(Duration::from_millis(5));
 }
 
-fn random_rgb() -> u32 {
-    rand::thread_rng().gen_range(0..=0xFFFFFF)
-}
+// fn random_rgb() -> u32 {
+//     rand::thread_rng().gen_range(0..=0xFFFFFF)
+// }
 
 fn main() {
     let args = Args::parse();
