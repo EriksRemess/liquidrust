@@ -1,11 +1,15 @@
 [package]
 name = "liquidrust"
-version = "0.0.7"
+version = "0.0.8"
 edition = "2021"
 authors = ["EriksRemess"]
-description = "Liquid temperature checker for Corsair H115iRGBPROXT"
+description = "A simple Rust application for displaying information and setting RGB colors for the Corsair H115i RGB PRO XT AIO."
 license = "MIT"
+readme = "README.md"
 repository = "https://github.com/EriksRemess/liquidrust"
+homepage = "https://github.com/EriksRemess/liquidrust"
+keywords = ["corsair", "rgb", "liquid", "cooling", "fan", "control", "monitoring", "hardware", "iCUE", "AIO"]
+categories = ["hardware-interfaces", "system", "monitoring", "hardware"]
 
 [dependencies]
 clap = { version = "4.5.15", features = ["derive"] }
