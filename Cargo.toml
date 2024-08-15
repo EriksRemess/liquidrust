@@ -9,7 +9,7 @@ readme = "Readme.md"
 repository = "https://github.com/EriksRemess/liquidrust"
 homepage = "https://github.com/EriksRemess/liquidrust"
 keywords = ["corsair", "rgb", "liquid", "cooling", "monitoring"]
-categories = ["hardware-interfaces", "system", "monitoring", "hardware"]
+categories = ["command-line-utilities", "hardware-support"]
 include = [
     "**/*.rs",
     "Cargo.toml",
