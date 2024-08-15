@@ -2,6 +2,18 @@
 
 A simple Rust application for displaying liquid temperature for the Corsair H115i RGB PRO XT AIO cooler.
 
+## Usage
+
+```zsh
+cargo install --git https://github.com/EriksRemess/liquidrust.git liquidrust
+
+liquidrust
+
+liquidrust --json
+
+liquidrust --json  | jq -r '"\(.liquid.value)\(.liquid.units)"'
+```
+
 
 ### Related
 
