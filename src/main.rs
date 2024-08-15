@@ -1,4 +1,5 @@
 extern crate hidapi;
+
 use hidapi::HidApi;
 use rand::Rng;
 
@@ -39,7 +40,12 @@ fn main() {
                 if liquid.read(&mut response).is_ok() {
                     if response[63] == crc8(&response[1..63]) {
                         let temperature = response[8] as f32 + response[7] as f32 / 255.0;
-                        println!("{:.2}°C", temperature);
+                        let pump = response[28] as f32 / 255.0 * 100.0;
+                        let firmware = format!("{}.{}.{}", response[2] >> 4, response[2] & 0xf, response[3]);
+                        println!("Liquid: {:.2}°C", temperature);
+                        println!("Pump: {:.2}%", pump);
+                        println!("Model: {} {}", device.manufacturer_string().unwrap(), device.product_string().unwrap());
+                        println!("Firmware: {}", firmware);
                     } else {
                         println!("CRC8 check failed");
                     }
