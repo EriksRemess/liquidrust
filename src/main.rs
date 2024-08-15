@@ -1,8 +1,11 @@
 extern crate hidapi;
 use clap::Parser;
 use hidapi::HidApi;
+use hidapi::HidDevice;
 use rand::Rng;
 use serde_json::json;
+use std::thread;
+use std::time::Duration;
 
 fn crc8(data: &[u8]) -> u8 {
     data.iter().fold(0x00, |mut crc, &byte| {
@@ -72,6 +75,51 @@ struct Args {
     /// Output in JSON format
     #[arg(short, long)]
     json: bool,
+    /// RGB color
+    #[arg(short, long)]
+    color: Option<String>,
+}
+
+fn write_to_device(device: &HidDevice, command: u8) {
+    let mut req = [0u8; 64];
+    req[0..3].copy_from_slice(&[0x3f, random_byte(), command]);
+    req[63] = crc8(&req[1..63]);
+
+    if device.write(&req).is_err() {
+        eprintln!("Failed to write to device");
+    }
+}
+
+fn read_from_device(device: &HidDevice) -> [u8; 64] {
+    let mut res = [0u8; 64];
+    if device.read(&mut res).is_err() {
+        eprintln!("Failed to read from device");
+    }
+    res
+}
+
+fn set_colors(device: &HidDevice, color: u32) {
+    let mut req = [0u8; 64];
+    req[0..2].copy_from_slice(&[0x3f, random_byte() | 0b100]);
+    let mut color = color;
+    for i in 0..16 {
+        // color = color.rotate_left(1);
+        // color = random_rgb();
+        req[(i * 3) + 3] = ((color >> 8) & 0x000000FF) as u8;
+        req[(i * 3) + 4] = ((color >> 16) & 0x000000FF) as u8;
+        req[(i * 3) + 5] = (color & 0x000000FF) as u8;
+    }
+    req[63] = crc8(&req[1..63]);
+
+    if device.write(&req).is_err() {
+        eprintln!("Failed to write to device");
+    }
+
+    thread::sleep(Duration::from_millis(5));
+}
+
+fn random_rgb() -> u32 {
+    rand::thread_rng().gen_range(0..=0xFFFFFF)
 }
 
 fn main() {
@@ -82,17 +130,14 @@ fn main() {
     for dev in api.device_list() {
         if dev.vendor_id() == 0x1b1c && dev.product_id() == 0x0c21 {
             if let Ok(device) = dev.open_device(&api) {
-                let mut req = [0u8; 64];
-                req[0..3].copy_from_slice(&[0x3f, random_byte(), 0xff]);
-                req[63] = crc8(&req[1..63]);
-
-                if device.write(&req).is_err() {
-                    eprintln!("Failed to write to device");
-                    continue;
+                if let Some(ref color_str) = args.color {
+                    let color_value =
+                        u32::from_str_radix(&color_str, 16).expect("Invalid hex color");
+                    set_colors(&device, color_value);
                 }
-
-                let mut res = [0u8; 64];
-                if device.read(&mut res).is_ok() && res[63] == crc8(&res[1..63]) {
+                write_to_device(&device, 0xff);
+                let res = read_from_device(&device);
+                if res[63] == crc8(&res[1..63]) {
                     let measurements = vec![
                         Measurement {
                             name: "liquid".to_string(),

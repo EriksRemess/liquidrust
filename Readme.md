@@ -12,6 +12,8 @@ liquidrust
 liquidrust --json
 
 liquidrust --json  | jq -r '"\(.liquid.value)\(.liquid.units)"'
+
+liquidrust --color 00FF00
 ```
 
 
