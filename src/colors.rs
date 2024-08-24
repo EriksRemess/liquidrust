@@ -53,11 +53,13 @@ pub fn gradient(start_color: u32, end_color: u32) -> Vec<String> {
   let start_color = u32_to_rgb(start_color);
   let end_color = u32_to_rgb(end_color);
   let mut colors = Vec::new();
-  for i in 0..LED_COUNT {
-    let factor = i as f64 / (LED_COUNT as f64 - 1.0);
+  for i in 0..(LED_COUNT / 2) {
+    let factor = i as f64 / ((LED_COUNT / 2) as f64 - 1.0);
     let (r, g, b) = interpolate_color(start_color, end_color, factor);
     colors.push(rgb_to_hex(r, g, b));
   }
+  let inverse_colors: Vec<String> = colors.iter().rev().map(|c| c.to_string()).collect();
+  colors.extend(inverse_colors);
   colors
 }
 
