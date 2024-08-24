@@ -1,5 +1,5 @@
 use crate::hid::{read_from_device, write_to_device};
-use crate::utils::{capitalize, crc8};
+use crate::utils::crc8;
 use hidapi::HidDevice;
 use serde_json::{json, to_string_pretty, Map};
 use crate::pump::PumpMode;
@@ -23,7 +23,7 @@ fn print_measurements_as_strings(measurements: &[Measurement]) {
     let units = measurement.units.as_deref().unwrap_or("");
     println!(
       "{}: {} {}",
-      capitalize(&measurement.name),
+      measurement.name,
       measurement.value,
       units
     );

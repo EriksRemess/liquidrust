@@ -10,8 +10,8 @@ pub enum PumpMode {
 }
 
 impl PumpMode {
-  pub fn from_u8(u: u8) -> PumpMode {
-    match u {
+  pub fn from_u8(mode: u8) -> PumpMode {
+    match mode {
       0x0 => PumpMode::Quiet,
       0x1 => PumpMode::Balanced,
       0x2 => PumpMode::Extreme,
