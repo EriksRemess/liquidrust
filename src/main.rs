@@ -5,7 +5,7 @@ mod info;
 mod utils;
 mod pump;
 use pump::PumpMode;
-use clap::{Parser};
+use clap::Parser;
 use colors::{gradient, parse_color, rainbow, set_color, set_colors};
 use hid::get_device;
 use info::print_measurements;
