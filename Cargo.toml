@@ -1,6 +1,6 @@
 [package]
 name = "liquidrust"
-version = "0.0.9"
+version = "0.2.0"
 edition = "2021"
 authors = ["EriksRemess"]
 description = "A simple Rust application for displaying information and setting RGB colors for the Corsair H115i RGB PRO XT AIO."
@@ -20,6 +20,7 @@ include = [
 clap = { version = "4.5.15", features = ["derive"] }
 hidapi = "2.6.3"
 rand = "0.8.5"
+regex = "1.10.6"
 serde = { version = "1.0.207", features = ["derive"] }
 serde_json = "1.0.125"
 

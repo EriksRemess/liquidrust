@@ -3,12 +3,11 @@ mod colors;
 mod hid;
 mod info;
 mod utils;
-use clap::Parser;
-use colors::gradient;
-use colors::rainbow;
+mod pump;
+use pump::PumpMode;
+use clap::{Parser};
+use colors::{gradient, parse_color, rainbow, set_color, set_colors};
 use hid::get_device;
-use hid::set_color;
-use hid::set_colors;
 use info::print_measurements;
 
 #[derive(Parser)]
@@ -32,6 +31,9 @@ struct Args {
   /// Device info & measurements
   #[arg(short, long)]
   info: bool,
+  /// Set the pump mode
+  #[arg(short, long, value_enum)]
+  pump: Option<PumpMode>,
 }
 
 fn main() {
@@ -39,20 +41,40 @@ fn main() {
   let mut print_info = args.info;
   if let Some(device) = get_device(0x1b1c, 0x0c21) {
     if let Some(ref color_str) = args.color {
-      let color_value = u32::from_str_radix(&color_str, 16).expect("Invalid hex color");
-      set_color(&device, color_value);
+      match parse_color(color_str) {
+        Ok(color) => {
+          println!("Setting single color to #{:06X}", color);
+          set_color(&device, color)
+        }
+        Err(e) => eprintln!("Error: {}", e),
+      }
     }
-    if let (Some(ref gradient1_str), Some(ref gradient2_str)) =
+    if let (Some(ref gradient1), Some(ref gradient2)) =
       (args.gradient1.as_ref(), args.gradient2.as_ref())
     {
-      let colors = gradient(gradient1_str, gradient2_str);
-      set_colors(&device, colors);
+      match (parse_color(gradient1), parse_color(gradient2)) {
+        (Ok(start_color), Ok(end_color)) => {
+          println!(
+            "Setting hex color gradient from #{:06X} to #{:06X}",
+            start_color, end_color
+          );
+          let colors = gradient(start_color, end_color);
+          set_colors(&device, colors);
+        }
+        (Err(err), _) | (_, Err(err)) => {
+          eprintln!("Error: {}", err);
+        }
+      }
     }
     if args.rainbow {
+      println!("Setting rainbow colors");
       let colors = rainbow();
       set_colors(&device, colors);
     }
-    if !args.color.is_some() && !args.gradient1.is_some() && !args.rainbow && !args.info {
+    if args.pump.is_some() {
+      pump::set_pump_mode(&device, args.pump.unwrap().value());
+    }
+    if args.color.is_none() && args.gradient1.is_none() && !args.rainbow && !args.info && args.pump.is_none() {
       print_info = true;
     }
     if print_info {

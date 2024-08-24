@@ -2,23 +2,34 @@
 
 A simple Rust application for displaying information and setting RGB colors for the Corsair H115i RGB PRO XT AIO.
 
-## Usage
+### Installation
 
 ```bash
 cargo install liquidrust
+```
 
+
+## Usage
+
+```bash
 liquidrust --info # display information about the device, also default output
 
 liquidrust --json # display information about the device in json format
 
-liquidrust --json | jq -r '"\(.liquid.value)\(.liquid.units)"' # display liquid temperature
+liquidrust --json | jq -r '"\(.liquid_temperature.value)\(.liquid_temperature.units)"' # display liquid temperature
 
 liquidrust --color 00FF00 # set green color for all leds
 
 liquidrust -a FF0000 -b 00FF00 # gradient from red to green
 
 liquidrust --rainbow # rainbow effect
+
+liquidrust --pump balanced # set pump mode (possible modes: quiet, balanced, extreme)
 ```
+
+### Bugs?
+
+Report them here: https://github.com/EriksRemess/liquidrust/issues
 
 ### Related
 
