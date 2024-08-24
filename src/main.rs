@@ -34,8 +34,6 @@ struct Args {
   info: bool,
 }
 
-#[warn(unused_variables)]
-
 fn main() {
   let args = Args::parse();
   let mut print_info = args.info;
@@ -60,7 +58,5 @@ fn main() {
     if print_info {
       print_measurements(&device, args.json);
     }
-    // no command specified
-
   }
 }

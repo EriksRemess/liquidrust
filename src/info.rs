@@ -10,7 +10,7 @@ pub struct Measurement {
   pub units: Option<String>,
 }
 
-pub fn print_measurements_as_strings(measurements: &[Measurement]) {
+fn print_measurements_as_strings(measurements: &[Measurement]) {
   for measurement in measurements {
     let units = measurement.units.as_deref().unwrap_or("");
     println!(
@@ -22,7 +22,7 @@ pub fn print_measurements_as_strings(measurements: &[Measurement]) {
   }
 }
 
-pub fn print_measurements_as_json(measurements: &[Measurement]) {
+fn print_measurements_as_json(measurements: &[Measurement]) {
   let mut json_obj = serde_json::Map::new();
 
   for measurement in measurements {
@@ -38,7 +38,7 @@ pub fn print_measurements_as_json(measurements: &[Measurement]) {
   println!("{}", json_str);
 }
 
-pub fn get_measurements(device: &hidapi::HidDevice) -> Vec<Measurement> {
+fn get_measurements(device: &hidapi::HidDevice) -> Vec<Measurement> {
   let res = read_from_device(&device);
   if res[63] != crc8(&res[1..63]) {
     eprintln!("CRC8 check failed or read error");
