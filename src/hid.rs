@@ -1,7 +1,12 @@
 use crate::utils::{crc8, random_byte};
 use hidapi::{HidApi, HidDevice};
 
-pub fn write_to_device(device: &HidDevice, command: u8, feature: Option<u8>, data: Option<&[u8; 60]>) {
+pub fn write_to_device(
+  device: &HidDevice,
+  command: u8,
+  feature: Option<u8>,
+  data: Option<&[u8; 60]>,
+) {
   let mut req = [0u8; 64];
   let mut start_at = 2;
   if let Some(feature) = feature {

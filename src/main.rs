@@ -2,13 +2,13 @@ extern crate hidapi;
 mod colors;
 mod hid;
 mod info;
-mod utils;
 mod pump;
-use pump::PumpMode;
+mod utils;
 use clap::Parser;
 use colors::{gradient, parse_color, rainbow, set_color, set_colors};
 use hid::get_device;
 use info::print_measurements;
+use pump::PumpMode;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -74,7 +74,12 @@ fn main() {
     if args.pump.is_some() {
       pump::set_pump_mode(&device, args.pump.unwrap().value());
     }
-    if args.color.is_none() && args.gradient1.is_none() && !args.rainbow && !args.info && args.pump.is_none() {
+    if args.color.is_none()
+      && args.gradient1.is_none()
+      && !args.rainbow
+      && !args.info
+      && args.pump.is_none()
+    {
       print_info = true;
     }
     if print_info {

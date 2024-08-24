@@ -1,8 +1,8 @@
 use crate::hid::{read_from_device, write_to_device};
+use crate::pump::PumpMode;
 use crate::utils::crc8;
 use hidapi::HidDevice;
 use serde_json::{json, to_string_pretty, Map};
-use crate::pump::PumpMode;
 
 #[derive(PartialEq)]
 enum MeasurementType {
@@ -21,12 +21,7 @@ struct Measurement {
 fn print_measurements_as_strings(measurements: &[Measurement]) {
   for measurement in measurements {
     let units = measurement.units.as_deref().unwrap_or("");
-    println!(
-      "{}: {} {}",
-      measurement.name,
-      measurement.value,
-      units
-    );
+    println!("{}: {} {}", measurement.name, measurement.value, units);
   }
 }
 
@@ -36,9 +31,15 @@ fn print_measurements_as_json(measurements: &[Measurement]) {
   for measurement in measurements {
     let mut value_obj = Map::new();
     if measurement.measurement_type == MeasurementType::Float {
-      value_obj.insert("value".to_string(), json!(measurement.value.parse::<f32>().unwrap()));
+      value_obj.insert(
+        "value".to_string(),
+        json!(measurement.value.parse::<f32>().unwrap()),
+      );
     } else if measurement.measurement_type == MeasurementType::Int {
-      value_obj.insert("value".to_string(), json!(measurement.value.parse::<i32>().unwrap()));
+      value_obj.insert(
+        "value".to_string(),
+        json!(measurement.value.parse::<i32>().unwrap()),
+      );
     } else if measurement.measurement_type == MeasurementType::String {
       value_obj.insert("value".to_string(), json!(measurement.value));
     }
