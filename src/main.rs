@@ -4,8 +4,10 @@ mod hid;
 mod info;
 mod pump;
 mod utils;
+use std::thread::sleep;
+
 use clap::Parser;
-use colors::{gradient, parse_color, rainbow, set_color, set_colors};
+use colors::{gradient, parse_color, rainbow, set_color, set_colors, set_brightness};
 use hid::get_device;
 use info::print_measurements;
 use pump::PumpMode;
@@ -83,6 +85,7 @@ fn main() {
       print_info = true;
     }
     if print_info {
+      set_brightness(&device, 1);
       print_measurements(&device, args.json);
     }
   }

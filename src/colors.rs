@@ -103,3 +103,17 @@ pub fn set_colors(device: &HidDevice, colors: Vec<String>) {
   write_to_device(device, 0b100, None, Some(&data));
   sleep(Duration::from_millis(5));
 }
+//https://gist.github.com/EriksRemess/5ddebf1a04d88722674423cf5d08912c
+pub fn set_brightness(device: &HidDevice, brightness: usize) {
+  let levels:[[u8; 48]; 4] = [
+    [0x00; 48],
+    [0x54; 48],
+    [0xa8; 48],
+    [0xff; 48]
+  ];
+  let mut buf = [0u8; 60];
+  let level = levels[brightness];
+  buf[0..48].copy_from_slice(&level);
+  write_to_device(device, 0x0, None, Some(&buf));
+  sleep(Duration::from_millis(1000));
+}

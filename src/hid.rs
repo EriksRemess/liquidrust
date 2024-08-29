@@ -19,6 +19,14 @@ pub fn write_to_device(
     req[start_at..start_at + 60].copy_from_slice(data);
   }
   req[63] = crc8(&req[1..63]);
+  print!("Writing to device: [");
+  for (i, byte) in req.iter().enumerate() {
+      if i > 0 {
+          print!(", "); // Add a comma separator between bytes
+      }
+      print!("{:02x}", byte);
+  }
+  println!("]");
   if device.write(&req).is_err() {
     eprintln!("Failed to write to device");
   }
