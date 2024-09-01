@@ -1,6 +1,6 @@
 [package]
 name = "liquidrust"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["EriksRemess"]
 description = "A simple Rust application for displaying information and setting RGB colors for the Corsair H115i RGB PRO XT AIO."
