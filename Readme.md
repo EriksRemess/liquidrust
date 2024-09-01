@@ -25,6 +25,9 @@ liquidrust -a FF0000 -b 00FF00 # gradient from red to green
 liquidrust --rainbow # rainbow effect
 
 liquidrust --pump balanced # set pump mode (possible modes: quiet, balanced, extreme)
+
+liquidrust --fan 25 # set fan speed to 25% (20-100%)
+
 ```
 
 ### Bugs?
