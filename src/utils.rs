@@ -17,3 +17,15 @@ pub fn crc8(data: &[u8]) -> u8 {
     crc
   })
 }
+
+pub fn u16le_from(buffer: &[u8], offset: usize) -> u16 {
+  u16::from_le_bytes([buffer[offset], buffer[offset + 1]])
+}
+
+pub fn byte_to_fraction(value: u8) -> f32 {
+  ((value as f32) / 255.0) * 100.0
+}
+
+pub fn fraction_of_byte(value: f32) -> u8 {
+  (value * 255.0).round() as u8
+}

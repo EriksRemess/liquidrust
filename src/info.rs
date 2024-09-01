@@ -1,21 +1,21 @@
 use crate::hid::{read_from_device, write_to_device};
 use crate::pump::PumpMode;
-use crate::utils::crc8;
+use crate::utils::{byte_to_fraction, crc8, u16le_from};
 use hidapi::HidDevice;
 use serde_json::{json, to_string_pretty, Map};
 
-#[derive(PartialEq)]
-enum MeasurementType {
+#[derive(Debug, Clone, PartialEq)]
+pub enum MeasurementType {
   String,
   Float,
   Int,
 }
-
-struct Measurement {
-  name: String,
-  value: String,
-  units: Option<String>,
-  measurement_type: MeasurementType,
+#[derive(Debug, Clone)]
+pub struct Measurement {
+  pub name: String,
+  pub value: String,
+  pub units: Option<String>,
+  pub measurement_type: MeasurementType,
 }
 
 fn print_measurements_as_strings(measurements: &[Measurement]) {
@@ -54,7 +54,8 @@ fn print_measurements_as_json(measurements: &[Measurement]) {
   println!("{}", json_str);
 }
 
-fn get_measurements(device: &HidDevice) -> Vec<Measurement> {
+pub fn get_measurements(device: &HidDevice) -> Vec<Measurement> {
+  write_to_device(&device, 0xff, None, None);
   let res = read_from_device(&device);
   if res[63] != crc8(&res[1..63]) {
     eprintln!("CRC8 check failed or read error");
@@ -109,11 +110,38 @@ fn get_measurements(device: &HidDevice) -> Vec<Measurement> {
     measurement_type: MeasurementType::String,
   });
 
+  measurements.push(Measurement {
+    name: "Fan 1 speed".to_string(),
+    value: format!("{:.0}", u16le_from(&res, 15)),
+    units: Some("RPM".to_string()),
+    measurement_type: MeasurementType::Float,
+  });
+
+  measurements.push(Measurement {
+    name: "Fan 1 duty".to_string(),
+    value: format!("{:.0}", byte_to_fraction(res[14])),
+    units: Some("%".to_string()),
+    measurement_type: MeasurementType::Float,
+  });
+
+  measurements.push(Measurement {
+    name: "Fan 2 speed".to_string(),
+    value: format!("{:.0}", u16le_from(&res, 22)),
+    units: Some("RPM".to_string()),
+    measurement_type: MeasurementType::Float,
+  });
+
+  measurements.push(Measurement {
+    name: "Fan 2 duty".to_string(),
+    value: format!("{:.0}", byte_to_fraction(res[21])),
+    units: Some("%".to_string()),
+    measurement_type: MeasurementType::Float,
+  });
+
   measurements
 }
 
 pub fn print_measurements(device: &HidDevice, print_json: bool) {
-  write_to_device(&device, 0xff, None, None);
   let measurements = get_measurements(&device);
   if print_json {
     print_measurements_as_json(&measurements);

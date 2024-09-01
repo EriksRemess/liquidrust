@@ -1,9 +1,11 @@
 extern crate hidapi;
 mod colors;
+mod fans;
 mod hid;
 mod info;
 mod pump;
 mod utils;
+
 use clap::Parser;
 use colors::{gradient, parse_color, rainbow, set_color, set_colors};
 use hid::get_device;
@@ -34,6 +36,12 @@ struct Args {
   /// Set the pump mode
   #[arg(short, long, value_enum)]
   pump: Option<PumpMode>,
+  /// Set the fan speed percentage
+  #[arg(short, long)]
+  fan: Option<u32>,
+  /// Test
+  #[arg(short, long)]
+  test: bool,
 }
 
 fn main() {
@@ -74,10 +82,15 @@ fn main() {
     if args.pump.is_some() {
       pump::set_pump_mode(&device, args.pump.unwrap().value());
     }
+    if let Some(fan) = args.fan {
+      fans::set_fan_mode(&device, fan);
+    }
     if args.color.is_none()
       && args.gradient1.is_none()
       && !args.rainbow
       && !args.info
+      && !args.test
+      && args.fan.is_none()
       && args.pump.is_none()
     {
       print_info = true;
