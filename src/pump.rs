@@ -1,7 +1,7 @@
 use crate::hid::write_to_device;
+use crate::info::get_measurements;
 use clap::ValueEnum;
 use hidapi::HidDevice;
-use crate::info::get_measurements;
 
 pub const PUMP_MODE_OFFSET: u8 = 0x17 - 3;
 
@@ -23,13 +23,13 @@ impl PumpMode {
   }
 
   pub fn from_str(mode: String) -> PumpMode {
-      match mode.to_lowercase().as_str() {
-        "quiet" => PumpMode::Quiet,
-        "balanced" => PumpMode::Balanced,
-        "extreme" => PumpMode::Extreme,
-        _ => PumpMode::Balanced,
-      }
+    match mode.to_lowercase().as_str() {
+      "quiet" => PumpMode::Quiet,
+      "balanced" => PumpMode::Balanced,
+      "extreme" => PumpMode::Extreme,
+      _ => PumpMode::Balanced,
     }
+  }
 
   pub fn value(&self) -> u8 {
     *self as u8

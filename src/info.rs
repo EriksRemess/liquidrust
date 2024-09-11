@@ -20,8 +20,11 @@ pub struct Measurement {
 
 fn print_measurements_as_strings(measurements: &[Measurement]) {
   for measurement in measurements {
-    let units = measurement.units.as_deref().unwrap_or("");
-    println!("{}: {} {}", measurement.name, measurement.value, units);
+    let Measurement {
+      name, value, units, ..
+    } = measurement;
+    let units = units.clone().unwrap_or("".to_string());
+    println!("{name}: {value} {units}");
   }
 }
 
@@ -51,7 +54,7 @@ fn print_measurements_as_json(measurements: &[Measurement]) {
   }
 
   let json_str = to_string_pretty(&json_obj).unwrap();
-  println!("{}", json_str);
+  println!("{json_str}");
 }
 
 pub fn get_measurements(device: &HidDevice) -> Vec<Measurement> {

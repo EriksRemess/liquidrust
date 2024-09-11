@@ -3,6 +3,7 @@ use hidapi::HidDevice;
 use regex::Regex;
 use std::thread::sleep;
 use std::time::Duration;
+
 pub const LED_COUNT: usize = 16;
 
 fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (u8, u8, u8) {

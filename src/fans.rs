@@ -21,7 +21,7 @@ impl FanMode {
 }
 
 pub fn set_fan_mode(device: &HidDevice, percentage: u32) {
-  println!("Setting fan speed to {}%", percentage);
+  println!("Setting fan speed to {percentage}%");
   let pump_mode = pump::get_pump_mode(&device);
   let mut data = [0u8; 60];
   data[0..8].copy_from_slice(&[0x0, 0xff, 0x5, 0xff, 0xff, 0xff, 0xff, 0xff]);

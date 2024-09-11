@@ -54,7 +54,7 @@ fn main() {
           println!("Setting single color to #{:06X}", color);
           set_color(&device, color)
         }
-        Err(e) => eprintln!("Error: {}", e),
+        Err(err) => eprintln!("Error: {err}"),
       }
     }
     if let (Some(ref gradient1), Some(ref gradient2)) =
@@ -70,7 +70,7 @@ fn main() {
           set_colors(&device, colors);
         }
         (Err(err), _) | (_, Err(err)) => {
-          eprintln!("Error: {}", err);
+          eprintln!("Error: {err}");
         }
       }
     }
