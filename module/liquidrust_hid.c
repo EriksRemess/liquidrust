@@ -33,9 +33,17 @@
 struct liquidrust_device {
 	struct hid_device *hdev;
 	struct device *hwmon_dev;
+
+	/*
+	 * sysfs/hwmon reads can happen concurrently. io_lock keeps only one
+	 * command in flight, while response_lock protects data touched by the
+	 * HID raw_event callback.
+	 */
 	struct mutex io_lock;
 	spinlock_t response_lock;
 	struct completion response_ready;
+
+	/* USB transfer buffers must not live on the stack. */
 	u8 request[LIQUIDRUST_REPORT_LEN];
 	u8 response[LIQUIDRUST_REPORT_LEN];
 	bool response_pending;
@@ -62,6 +70,7 @@ static u8 liquidrust_crc8(const u8 *data, size_t len)
 	return crc;
 }
 
+/* The Rust app uses a random high 5-bit nonce for most commands. */
 static u8 liquidrust_random_byte(void)
 {
 	return (u8)(((get_random_u32() % 31) + 1) << 3);
@@ -84,6 +93,11 @@ static u32 liquidrust_millipercent(u8 value)
 
 static u8 liquidrust_hwmon_pwm(u8 value)
 {
+	/*
+	 * lm-sensors 3.6 displays hwmon PWM values as half-percent units.
+	 * Convert the device's 0..255 duty byte to 0..200 so sensors reports
+	 * a percentage matching the exact *_millipercent attributes.
+	 */
 	return (u8)(((u32)value * 200 + 127) / 255);
 }
 
@@ -108,6 +122,12 @@ static void liquidrust_format_milli(char *buf, size_t size, u32 milli)
 
 static void liquidrust_build_status_request(u8 *request)
 {
+	/*
+	 * Same request as src/info.rs:
+	 *   byte 0  = HID report ID
+	 *   byte 1  = command 0xff
+	 *   byte 63 = CRC8 over bytes 1..62
+	 */
 	memset(request, 0, LIQUIDRUST_REPORT_LEN);
 	request[0] = LIQUIDRUST_REPORT_ID;
 	request[1] = liquidrust_random_byte() | LIQUIDRUST_STATUS_CMD;
@@ -120,6 +140,10 @@ static int liquidrust_send_status_request(struct liquidrust_device *ldev,
 {
 	int ret;
 
+	/*
+	 * Prefer the interrupt/output-report path. Some USB HID stacks do not
+	 * implement it for this device, so fall back to SET_REPORT over control.
+	 */
 	ret = hid_hw_output_report(ldev->hdev, request, LIQUIDRUST_REPORT_LEN);
 	if (ret != -ENOSYS && ret != -EOPNOTSUPP)
 		return ret;
@@ -137,6 +161,7 @@ static int liquidrust_refresh(struct liquidrust_device *ldev, u8 *report)
 
 	mutex_lock(&ldev->io_lock);
 
+	/* Reuse a fresh response briefly so one sensors run does not spam USB. */
 	spin_lock_irqsave(&ldev->response_lock, flags);
 	if (ldev->response_valid &&
 	    time_before(jiffies,
@@ -151,6 +176,10 @@ static int liquidrust_refresh(struct liquidrust_device *ldev, u8 *report)
 	ldev->response_pending = true;
 	spin_unlock_irqrestore(&ldev->response_lock, flags);
 
+	/*
+	 * The send is synchronous, but the device response arrives later as an
+	 * input report delivered to liquidrust_raw_event().
+	 */
 	liquidrust_build_status_request(ldev->request);
 
 	ret = liquidrust_send_status_request(ldev, ldev->request);
@@ -204,6 +233,7 @@ static int liquidrust_raw_event(struct hid_device *hdev, struct hid_report *hid_
 	    liquidrust_crc8(&data[1], LIQUIDRUST_CRC_OFFSET - 1))
 		return 0;
 
+	/* Wake the sysfs/hwmon reader waiting in liquidrust_refresh(). */
 	spin_lock_irqsave(&ldev->response_lock, flags);
 	if (ldev->response_pending) {
 		memcpy(ldev->response, data, LIQUIDRUST_REPORT_LEN);
@@ -406,6 +436,10 @@ static ssize_t raw_report_show(struct device *dev, struct device_attribute *attr
 }
 static DEVICE_ATTR_RO(raw_report);
 
+/*
+ * Standard hwmon callbacks used by lm-sensors. These expose the values that
+ * have natural hwmon equivalents: temperature, fan RPM, and PWM-like duty.
+ */
 static int liquidrust_hwmon_read(struct device *dev,
 				 enum hwmon_sensor_types type, u32 attr,
 				 int channel, long *val)
@@ -468,6 +502,7 @@ static int liquidrust_hwmon_read(struct device *dev,
 	return -EOPNOTSUPP;
 }
 
+/* Human-readable labels for the hwmon channels that support labels. */
 static int liquidrust_hwmon_read_string(struct device *dev,
 					enum hwmon_sensor_types type, u32 attr,
 					int channel, const char **str)
@@ -519,6 +554,10 @@ static const struct hwmon_chip_info liquidrust_hwmon_chip_info = {
 	.info = liquidrust_hwmon_info,
 };
 
+/*
+ * Pump mode has no standard lm-sensors feature type, so expose it as an extra
+ * hwmon sysfs file next to the channels sensors already understands.
+ */
 static ssize_t liquidrust_hwmon_pump_mode_show(struct device *dev,
 					       struct device_attribute *attr,
 					       char *buf)
@@ -615,6 +654,7 @@ static const struct attribute_group liquidrust_attr_group = {
 	.attrs = liquidrust_attrs,
 };
 
+/* Called when the HID core binds this driver to the Corsair device. */
 static int liquidrust_probe(struct hid_device *hdev,
 			    const struct hid_device_id *id)
 {
@@ -639,6 +679,7 @@ static int liquidrust_probe(struct hid_device *hdev,
 	if (ret)
 		return ret;
 
+	/* Keep the interrupt input pipe open so raw_event can receive replies. */
 	ret = hid_hw_open(hdev);
 	if (ret)
 		goto err_stop;
@@ -667,6 +708,7 @@ err_stop:
 	return ret;
 }
 
+/* Undo probe-time registration when the device or module goes away. */
 static void liquidrust_remove(struct hid_device *hdev)
 {
 	sysfs_remove_group(&hdev->dev.kobj, &liquidrust_attr_group);
