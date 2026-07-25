@@ -38,13 +38,13 @@ EOF
 Install this module as DKMS source:
 
 ```bash
-sudo rm -rf /usr/src/liquidrust_hid-0.2.2
-sudo install -d /usr/src/liquidrust_hid-0.2.2
-sudo cp -a module/. /usr/src/liquidrust_hid-0.2.2/
+sudo rm -rf /usr/src/liquidrust_hid-0.2.3
+sudo install -d /usr/src/liquidrust_hid-0.2.3
+sudo cp -a module/. /usr/src/liquidrust_hid-0.2.3/
 
-sudo dkms add -m liquidrust_hid -v 0.2.2
-sudo dkms build -m liquidrust_hid -v 0.2.2
-sudo dkms install -m liquidrust_hid -v 0.2.2
+sudo dkms add -m liquidrust_hid -v 0.2.3
+sudo dkms build -m liquidrust_hid -v 0.2.3
+sudo dkms install -m liquidrust_hid -v 0.2.3
 ```
 
 Load the installed module:
@@ -135,6 +135,6 @@ sudo rmmod liquidrust_hid
 Remove the DKMS installation with:
 
 ```bash
-sudo dkms remove -m liquidrust_hid -v 0.2.2 --all
-sudo rm -rf /usr/src/liquidrust_hid-0.2.2
+sudo dkms remove -m liquidrust_hid -v 0.2.3 --all
+sudo rm -rf /usr/src/liquidrust_hid-0.2.3
 ```
